@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Build / cache
+dist/
+coverage/
+.cache/
+*.log
+logs/
+
+# Environment & secrets (keep *.example)
+.env
+.env.*
+!.env.example
+!**/.env.example
+
+# Local / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Runtime uploads & generated assets
+uploads/
+generated/
+tmp/
+temp/
+
+# Local working notes (not part of the app)
+server/BACKEND_IMPROVEMENTS.md
+server/SUPABASE_IMPROVEMENTS.md
+
+# OS / misc
+*.pem
+*.key
+.supabase/
