@@ -1,6 +1,6 @@
-# Lumina — Video Library
+# StreamWise AI
 
-Lumina is a production-style video sharing application for a final year project. It uses a light dashboard interface (not a YouTube clone), stores media in Cloudinary, and saves metadata in Supabase PostgreSQL through `@supabase/supabase-js`.
+StreamWise AI is a production-style video sharing application for a final year project. It uses a light dashboard interface (not a YouTube clone), stores media in Cloudinary, and saves metadata in Supabase PostgreSQL through `@supabase/supabase-js`.
 
 ## Features
 
