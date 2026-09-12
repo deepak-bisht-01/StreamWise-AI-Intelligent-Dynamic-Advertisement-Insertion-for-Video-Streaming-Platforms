@@ -2,15 +2,15 @@ import { HiOutlineFilm, HiOutlinePlus, HiOutlineCloudArrowUp } from 'react-icons
 import Button from './Button.jsx';
 
 export default function EmptyState({
-  title = 'No videos yet',
-  message = 'Upload your first clip to start building the library.',
+  title = 'No videos uploaded yet',
+  message = 'Upload your first video to begin AI processing. Processed videos will appear here after successful advertisement insertion.',
   actionLabel = 'Upload video',
   to = '/upload',
   icon = HiOutlineFilm,
   variant = 'default',
 }) {
   const iconStyles = {
-    default: 'bg-indigo-50 text-primary',
+    default: 'bg-emerald-50 text-primary',
     upload: 'bg-emerald-50 text-emerald-600',
     search: 'bg-amber-50 text-amber-600',
   };

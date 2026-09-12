@@ -11,7 +11,7 @@ export default function Button({
   loading = false,
   onClick,
 }) {
-  const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseStyles = 'inline-flex items-center justify-center gap-2 font-semibold transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500';
   
   const sizeStyles = {
     sm: 'px-3 py-1.5 text-xs rounded-lg',
@@ -21,12 +21,12 @@ export default function Button({
 
   const variantStyles = {
     primary: `
-      bg-primary text-white shadow-lg shadow-primary/25 hover:bg-primary-dark hover:shadow-xl hover:shadow-primary/30
-      focus:ring-primary focus:ring-offset-2
+      bg-emerald-500 text-white shadow-lg shadow-emerald-500/25 hover:bg-emerald-600 hover:shadow-xl hover:shadow-emerald-500/30
+      focus:ring-emerald-500 focus:ring-offset-2
     `,
     secondary: `
-      bg-white text-slate-700 border-2 border-slate-200 hover:border-primary hover:text-primary hover:bg-slate-50
-      focus:ring-primary focus:ring-offset-2
+      bg-white text-slate-700 border-2 border-slate-200 hover:border-emerald-500 hover:text-emerald-500 hover:bg-slate-50
+      focus:ring-emerald-500 focus:ring-offset-2
     `,
     danger: `
       bg-rose-50 text-rose-600 border-2 border-rose-200 hover:bg-rose-100 hover:border-rose-300
@@ -37,8 +37,8 @@ export default function Button({
       focus:ring-slate-400 focus:ring-offset-2
     `,
     gradient: `
-      bg-gradient-to-r from-primary to-accent text-white shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30
-      focus:ring-primary focus:ring-offset-2
+      bg-gradient-to-r from-emerald-500 to-indigo-500 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30
+      focus:ring-emerald-500 focus:ring-offset-2
     `,
   };
 

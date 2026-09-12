@@ -53,10 +53,10 @@ function FileDrop({
       }}
       className={`relative rounded-2xl border-2 border-dashed p-6 transition-all duration-300 ${
         isDragging 
-          ? 'border-primary bg-primary/5 scale-[1.02]' 
+          ? 'border-emerald-500 bg-emerald-500/5 scale-[1.02]' 
           : file 
             ? 'border-emerald-300 bg-emerald-50/50' 
-            : 'border-slate-200 bg-slate-50 hover:border-primary/50 hover:bg-slate-100'
+            : 'border-slate-200 bg-slate-50 hover:border-emerald-500/50 hover:bg-slate-100'
       }`}
     >
       {file && (
@@ -82,7 +82,7 @@ function FileDrop({
             <HiOutlineCheck className="h-8 w-8" />
           </div>
         ) : (
-          <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${isDragging ? 'bg-primary text-white' : 'bg-white text-primary'} shadow-sm transition-colors`}>
+          <div className={`flex h-16 w-16 items-center justify-center rounded-2xl ${isDragging ? 'bg-emerald-500 text-white' : 'bg-white text-emerald-500'} shadow-sm transition-colors`}>
             <Icon className="h-8 w-8" />
           </div>
         )}
@@ -276,7 +276,7 @@ export default function UploadForm() {
         disabled={isSubmitting}
       >
         <HiOutlineCloudArrowUp className="h-5 w-5" />
-        {isSubmitting ? 'Publishing...' : 'Publish to library'}
+        {isSubmitting ? 'Publishing...' : 'Upload Video'}
       </Button>
     </form>
   );

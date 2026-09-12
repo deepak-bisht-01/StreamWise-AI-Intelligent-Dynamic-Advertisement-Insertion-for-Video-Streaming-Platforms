@@ -46,19 +46,19 @@ export default function Home() {
 
   const statsCards = [
     {
-      label: 'Published videos',
+      label: 'Processed videos',
       value: stats?.totalVideos ?? 0,
       icon: HiOutlineFilm,
-      color: 'bg-indigo-50 text-indigo-600',
-    },
-    {
-      label: 'Library duration',
-      value: formatDuration(stats?.totalDuration),
-      icon: HiOutlineClock,
       color: 'bg-emerald-50 text-emerald-600',
     },
     {
-      label: 'Stored media',
+      label: 'Streaming duration',
+      value: formatDuration(stats?.totalDuration),
+      icon: HiOutlineClock,
+      color: 'bg-indigo-50 text-indigo-600',
+    },
+    {
+      label: 'Storage used',
       value: formatBytes(stats?.totalStorage),
       icon: HiOutlineServer,
       color: 'bg-amber-50 text-amber-600',
@@ -70,16 +70,15 @@ export default function Home() {
       <section className="mx-auto max-w-7xl px-4 pb-12 pt-12 sm:px-6 lg:px-8">
         <div className="grid items-end gap-8 lg:grid-cols-[1.4fr_0.8fr]">
           <div className="animate-fade-in">
-            <p className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-primary">
-              Academic media studio
+            <p className="mb-4 text-sm font-bold uppercase tracking-[0.3em] text-emerald-500">
+              AI-Powered Video Streaming Platform
             </p>
             <h1 className="max-w-2xl text-4xl font-extrabold tracking-tight text-slate-900 sm:text-5xl lg:text-6xl leading-tight">
-              A calm workspace for{' '}
-              <span className="gradient-text">every uploaded recording.</span>
+              Intelligent Dynamic Advertisement Insertion for{' '}
+              <span className="bg-gradient-to-r from-emerald-500 to-indigo-500 bg-clip-text text-transparent">seamless video streaming.</span>
             </h1>
             <p className="mt-6 max-w-xl text-lg text-slate-600 leading-relaxed">
-              Lumina stores your videos in the cloud, keeps metadata in PostgreSQL, and presents
-              the library as a clean research dashboard.
+              StreamWise AI analyzes your content, detects advertisement spaces, replaces them with intelligent advertisements, and prepares processed videos for streaming.
             </p>
           </div>
           <div className="animate-slide-in">
@@ -134,11 +133,11 @@ export default function Home() {
         {!isLoading && !error && filteredVideos.length === 0 ? (
           <div className="animate-scale-in">
             <EmptyState
-              title={query ? 'No matching videos' : 'The library is empty'}
+              title={query ? 'No matching videos' : 'No videos uploaded yet'}
               message={
                 query
                   ? 'Try a different search term or clear the filter.'
-                  : 'Publish a recording to see it appear in this grid.'
+                  : 'Upload your first video to begin AI processing. Processed videos will appear here after successful advertisement insertion.'
               }
               actionLabel={query ? 'Clear search' : 'Upload video'}
               to={query ? '/' : '/upload'}

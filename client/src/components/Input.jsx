@@ -6,7 +6,7 @@ export default function Input({
   className = '',
   ...props
 }) {
-  const errorClass = error ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200' : 'border-slate-200 focus:border-primary focus:ring-primary/20';
+  const errorClass = error ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-200' : 'border-slate-200 focus:border-emerald-500 focus:ring-emerald-500/20';
   
   return (
     <label className="block" htmlFor={id}>

@@ -96,6 +96,7 @@ export default function Watch() {
             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{video.title}</h1>
+                <p className="mt-2 text-sm text-slate-600 font-medium">StreamWise AI</p>
                 <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
                   <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100">
                     <HiOutlineCalendarDays className="h-4 w-4" />
@@ -121,16 +122,67 @@ export default function Watch() {
               <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">Description</h2>
               <p className="whitespace-pre-wrap text-base leading-relaxed text-slate-600">{video.description}</p>
             </div>
+
+            <div className="card-shadow mt-6 rounded-2xl border border-slate-100 bg-white p-6">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">AI Processing Status</h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Advertisement Detection Completed</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Advertisement Replacement Completed</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Video Rendering Completed</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Ready for Streaming</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="card-shadow mt-6 rounded-2xl border border-slate-100 bg-white p-6">
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">AI Processing Status</h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Advertisement Detection Completed</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Advertisement Replacement Completed</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Video Rendering Completed</p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
+                  <p className="text-sm text-slate-700">Ready for Streaming</p>
+                </div>
+              </div>
+            </div>
           </section>
 
           <aside className="animate-slide-in">
-            <h2 className="mb-6 text-xl font-bold text-slate-900">Related recordings</h2>
+            <h2 className="mb-6 text-xl font-bold text-slate-900">Recommended Videos</h2>
             <div className="grid gap-4">
               {related.length === 0 ? (
                 <div className="card-shadow rounded-2xl border border-slate-100 bg-white p-6 text-center">
-                  <p className="text-sm text-slate-500">
+                  <p className="text-sm text-slate-500 mb-4">
                     More videos will appear here as the library grows.
                   </p>
+                  <div className="space-y-2 text-left">
+                    <p className="text-sm font-medium text-slate-700">• AI in Computer Vision</p>
+                    <p className="text-sm font-medium text-slate-700">• Machine Learning Fundamentals</p>
+                    <p className="text-sm font-medium text-slate-700">• Intelligent Video Processing</p>
+                    <p className="text-sm font-medium text-slate-700">• Future of Digital Advertising</p>
+                    <p className="text-sm font-medium text-slate-700">• Deep Learning Applications</p>
+                  </div>
                 </div>
               ) : (
                 related.map((item) => <VideoCard key={item.id} video={item} />)
