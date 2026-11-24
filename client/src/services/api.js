@@ -56,6 +56,11 @@ export async function uploadVideo({ title, description, video, thumbnail, onProg
   return unwrap(response);
 }
 
+export async function processVideoWithAI(payload) {
+  const response = await api.post('/ai/process', payload);
+  return unwrap(response);
+}
+
 export function getErrorMessage(error) {
   return error.response?.data?.message || error.message || 'Something went wrong';
 }

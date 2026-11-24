@@ -155,6 +155,46 @@ The API uses the anon key with no authentication, so the policies above allow th
    - `thumbnails/`
 5. Deleting a library item also deletes both Cloudinary assets.
 
+## Google Colab / AI Processor Integration
+
+The detector from `server/scripts/Copy_of_Phase3_FIXED_V4.ipynb` is checked in as `server/scripts/ad_slot_detector_v4.py`; the notebook's detector cell and the checked-in script match. `server/scripts/colab_ad_insertion.py` is the command-line bridge used by the API.
+
+After a video upload, the API queues billboard and blank-wall detection in the background. Slot data is stored in Supabase, and the rectangle-marked detection video is saved under `server/storage/ai-previews/` and shown on the watch page. The original upload remains available too. This pipeline identifies placement suggestions; it does not insert an advertisement creative into the video.
+
+### One-time database setup
+
+Run `server/database/ad_analysis_migration.sql` in the Supabase SQL Editor after setting up the main video schema. It adds analysis status fields and the `ad_slots` table. The API resumes pending analyses when it starts.
+
+### Python setup
+
+Use Python 3.10–3.12. The server automatically uses the repository's `.venv` interpreter when present; otherwise, it uses `py -3` on Windows or `python3` on macOS/Linux.
+
+Install PyTorch and torchvision first using the command for your machine from [PyTorch's install guide](https://pytorch.org/get-started/locally/), then install the remaining dependencies:
+
+```powershell
+.\.venv\Scripts\Activate.ps1
+python -m pip install -r server/scripts/requirements-ai.txt
+```
+
+Set `PYTHON_EXECUTABLE` in `server/.env` only if you want to use a different interpreter. `AI_PROCESSOR_SCRIPT` can point to another compatible bridge script.
+
+### Analysis endpoints
+
+```http
+GET  /api/videos/:id/analysis
+POST /api/videos/:id/analyze
+```
+
+The first endpoint returns the current status and detected slots. The second queues a retry after a failed analysis. Uploading a video starts analysis automatically.
+
+When analysis is complete, the watch page lets you choose a detected slot and upload an image or video creative (JPG, PNG, MP4, MOV, WebM, MKV, or AVI; up to 100 MB). The API runs `server/scripts/ad_inserter.py` with the detector's normalized video, `slots.json`, and `coordinates.csv`. It perspective-warps the creative into the tracked billboard and saves a new playable video with the source audio under `server/storage/ad-results/`. The detector inputs needed for insertion are kept under `server/storage/ad-inputs/`.
+
+The lower-level processor endpoint is also available for local input paths:
+
+```http
+POST /api/ai/process
+```
+
 ## Running the Server
 
 ```bash

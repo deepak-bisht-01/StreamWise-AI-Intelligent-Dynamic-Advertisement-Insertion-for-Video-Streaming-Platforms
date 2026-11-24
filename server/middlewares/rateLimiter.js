@@ -12,9 +12,10 @@ const generalLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => {
-    if (env.isProduction) return false;
-    return true; // Skip rate limiting in development
-  }
+    if (!env.isProduction) return true; // Skip rate limiting in development
+    // Ad rendering is an explicit user action and has a separate upload handler.
+    return req.method === 'POST' && /^\/videos\/[^/]+\/ads\/?$/.test(req.path);
+  },
 });
 
 const uploadLimiter = rateLimit({

@@ -2,3 +2,11 @@ node_modules/
 .env
 *.log
 logs/
+# AI pipeline outputs / model caches
+server/generated/
+storage/ai-previews/
+storage/ad-results/
+storage/ad-inputs/
+.venv/
+__pycache__/
+*.pyc

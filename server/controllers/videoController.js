@@ -2,6 +2,8 @@ const { asyncHandler } = require('../utils/asyncHandler');
 const { ApiResponse } = require('../utils/ApiResponse');
 const { sanitizeInput } = require('../utils/sanitizer');
 const videoService = require('../services/videoService');
+const adAnalysis = require('../services/adAnalysis');
+const { deleteAdResults } = require('../services/adInsertionService');
 const logger = require('../utils/logger');
 
 const uploadVideo = asyncHandler(async (req, res) => {
@@ -17,8 +19,14 @@ const uploadVideo = asyncHandler(async (req, res) => {
     thumbnailFile: req.files.thumbnail[0],
   });
 
-  logger.info({ message: 'Video uploaded successfully', videoId: video.id, requestId: req.id });
-  res.status(201).json(ApiResponse.success('Video uploaded successfully', video));
+  // Keep the upload response quick; billboard analysis runs in the background.
+  adAnalysis.enqueue(video.id);
+
+  logger.info({ message: 'Video uploaded and billboard analysis queued', videoId: video.id, requestId: req.id });
+  res.status(201).json(ApiResponse.success('Video uploaded successfully', {
+    ...video,
+    analysisStatus: 'pending',
+  }));
 });
 
 const getVideos = asyncHandler(async (req, res) => {
@@ -40,6 +48,8 @@ const getVideo = asyncHandler(async (req, res) => {
 
 const deleteVideo = asyncHandler(async (req, res) => {
   const video = await videoService.deleteVideo(req.params.id);
+  await adAnalysis.deletePreview(req.params.id);
+  await deleteAdResults(req.params.id);
   
   logger.info({ message: 'Video deleted successfully', videoId: req.params.id, requestId: req.id });
   res.status(200).json(ApiResponse.success('Video deleted successfully', video));

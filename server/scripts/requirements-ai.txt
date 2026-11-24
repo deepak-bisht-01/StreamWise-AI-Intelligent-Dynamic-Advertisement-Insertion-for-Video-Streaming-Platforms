@@ -1,0 +1,10 @@
+# Install inside a virtual environment (Python 3.10 - 3.12 recommended)
+# 1) Install torch + torchvision FIRST from https://pytorch.org/get-started/locally/
+#    (pick CUDA build if you have an NVIDIA GPU, otherwise CPU build)
+# 2) Then: pip install -r server/scripts/requirements-ai.txt
+transformers==4.57.1
+opencv-python-headless==4.12.0.88
+numpy>=2.0,<2.3
+Pillow>=10,<14
+imageio-ffmpeg==0.6.0
+safetensors>=0.4.3

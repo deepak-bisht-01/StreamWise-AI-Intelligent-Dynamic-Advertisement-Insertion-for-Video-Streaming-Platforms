@@ -1,4 +1,5 @@
 const express = require('express');
+const path = require('path');
 const cors = require('cors');
 const helmet = require('helmet');
 const compression = require('compression');
@@ -55,6 +56,7 @@ app.use(cors({
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use('/storage', express.static(path.join(__dirname, 'storage')));
 
 // Request ID middleware
 app.use(requestId);

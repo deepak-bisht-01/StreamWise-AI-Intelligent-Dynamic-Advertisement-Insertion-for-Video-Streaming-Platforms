@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate, useParams } from 'react-router-dom';
 import { HiOutlineCalendarDays, HiOutlineClock, HiOutlineServer, HiOutlineTrash, HiOutlineArrowLeft } from 'react-icons/hi2';
@@ -8,10 +8,12 @@ import Button from '../components/Button.jsx';
 import ErrorState from '../components/ErrorState.jsx';
 import VideoCard from '../components/VideoCard.jsx';
 import { WatchPageSkeleton } from '../components/Skeleton.jsx';
+import AdAnalysisPanel from '../components/AdAnalysisPanel.jsx';
 
 export default function Watch() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const videoElement = useRef(null);
   const [video, setVideo] = useState(null);
   const [related, setRelated] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -82,6 +84,7 @@ export default function Watch() {
           <section className="animate-fade-in">
             <div className="card-shadow-elevated overflow-hidden rounded-2xl bg-slate-950">
               <video
+                ref={videoElement}
                 key={video.videoUrl}
                 className="aspect-video w-full bg-black"
                 src={video.videoUrl}
@@ -123,48 +126,15 @@ export default function Watch() {
               <p className="whitespace-pre-wrap text-base leading-relaxed text-slate-600">{video.description}</p>
             </div>
 
-            <div className="card-shadow mt-6 rounded-2xl border border-slate-100 bg-white p-6">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">AI Processing Status</h2>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Advertisement Detection Completed</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Advertisement Replacement Completed</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Video Rendering Completed</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Ready for Streaming</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="card-shadow mt-6 rounded-2xl border border-slate-100 bg-white p-6">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4">AI Processing Status</h2>
-              <div className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Advertisement Detection Completed</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Advertisement Replacement Completed</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Video Rendering Completed</p>
-                </div>
-                <div className="flex items-center gap-3">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500"></div>
-                  <p className="text-sm text-slate-700">Ready for Streaming</p>
-                </div>
-              </div>
+            <div className="mt-6">
+              <AdAnalysisPanel
+                videoId={id}
+                onSeek={(seconds) => {
+                  if (!videoElement.current) return;
+                  videoElement.current.currentTime = seconds;
+                  videoElement.current.play().catch(() => {});
+                }}
+              />
             </div>
           </section>
 

@@ -1,5 +1,7 @@
 const express = require('express');
 const videoRoutes = require('./videoRoutes');
+const adAnalysisRoutes = require('./adAnalysisRoutes');
+const adAnalysis = require('../services/adAnalysis');
 const { healthCheck: dbHealthCheck } = require('../config/supabase');
 const { cloudinary } = require('../config/cloudinary');
 const logger = require('../utils/logger');
@@ -62,6 +64,8 @@ router.get('/health', async (req, res) => {
   });
 });
 
+router.use('/videos', adAnalysisRoutes(adAnalysis));
 router.use('/videos', videoRoutes);
+router.use('/ai', require('./aiRoutes'));
 
 module.exports = router;

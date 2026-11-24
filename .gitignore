@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.venv/
 
 # Build / cache
 dist/
@@ -36,3 +37,12 @@ server/SUPABASE_IMPROVEMENTS.md
 *.pem
 *.key
 .supabase/
+
+# Local videos, generated results and model weights
+/results/
+/out.mp4
+/out_preview.mp4
+/test.mp4
+/test2.mp4
+/server/mobileclip_blt.ts
+/server/yoloe-11s-seg.pt

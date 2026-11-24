@@ -73,6 +73,8 @@ const env = {
   nodeEnv: getEnv('NODE_ENV', 'development'),
   port: Number(getEnv('PORT', '5000')),
   clientOrigin: getEnv('CLIENT_ORIGIN', 'http://localhost:5173'),
+  pythonExecutable: getEnv('PYTHON_EXECUTABLE', process.platform === 'win32' ? 'python' : 'python3'),
+  aiProcessorScript: getEnv('AI_PROCESSOR_SCRIPT', ''),
   supabase: {
     url: getEnv('SUPABASE_URL'),
     anonKey: getEnv('SUPABASE_ANON_KEY'),
