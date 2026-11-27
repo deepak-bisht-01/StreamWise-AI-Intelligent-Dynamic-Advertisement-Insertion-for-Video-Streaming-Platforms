@@ -17,30 +17,67 @@ const uploadVideo = asyncHandler(async (req, res) => {
     description: sanitizedData.description.trim(),
     videoFile: req.files.video[0],
     thumbnailFile: req.files.thumbnail[0],
+    uploadedBy: req.user.id,
+    creatorName: req.profile.display_name || req.user.email,
   });
 
-  // Keep the upload response quick; billboard analysis runs in the background.
-  adAnalysis.enqueue(video.id);
-
-  logger.info({ message: 'Video uploaded and billboard analysis queued', videoId: video.id, requestId: req.id });
+  logger.info({ message: 'Video submitted for admin review', videoId: video.id, creatorId: req.user.id, requestId: req.id });
   res.status(201).json(ApiResponse.success('Video uploaded successfully', {
-    ...video,
-    analysisStatus: 'pending',
+    id: video.id,
+    title: video.title,
+    description: video.description,
+    creatorName: video.creatorName,
+    createdAt: video.createdAt,
+    analysisStatus: video.analysisStatus,
+    adReviewEnabled: false,
   }));
 });
 
 const getVideos = asyncHandler(async (req, res) => {
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 12;
-  const result = await videoService.listVideos(page, limit);
+  const result = await videoService.listApprovedVideos(page, limit, req.profile, req.sessionId);
   
   logger.info({ message: 'Videos fetched successfully', count: result.videos.length, requestId: req.id });
   res.status(200).json(ApiResponse.success('Videos fetched successfully', result));
 });
 
+const getAdminVideos = asyncHandler(async (req, res) => {
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 50;
+  const result = await videoService.listVideos(page, limit, req.user.id, req.sessionId);
+  res.status(200).json(ApiResponse.success('Admin video library loaded', result));
+});
+
+const getMyVideos = asyncHandler(async (req, res) => {
+  const result = await videoService.listMyVideos(req.user.id);
+  res.status(200).json(ApiResponse.success('Your video submissions loaded', result));
+});
+
+const selectVideoForAdReview = asyncHandler(async (req, res) => {
+  const video = await videoService.enableAdReview(req.params.id);
+  adAnalysis.enqueue(video.id);
+  logger.info({ message: 'Admin selected video for ad review', videoId: video.id, requestId: req.id });
+  res.status(202).json(ApiResponse.success('Video selected. Billboard analysis has been queued.', {
+    id: video.id,
+    adReviewEnabled: true,
+    analysisStatus: video.analysis_status || 'pending',
+  }));
+});
+
+const setAdvertiserPriorityTier = asyncHandler(async (req, res) => {
+  const result = await videoService.setAdvertiserPriorityTier(req.params.id, req.body?.priorityTier);
+  res.json(ApiResponse.success('Advertiser video priority updated', result));
+});
+
 const getVideo = asyncHandler(async (req, res) => {
-  const video = await videoService.getVideoById(req.params.id);
-  const related = await videoService.getRelatedVideos(req.params.id);
+  const isAdmin = req.profile?.role === 'admin';
+  const video = isAdmin
+    ? await videoService.getVideoById(req.params.id, req.user.id, req.sessionId)
+    : await videoService.getApprovedVideoById(req.params.id, req.profile, req.sessionId);
+  const related = isAdmin
+    ? await videoService.getRelatedVideos(req.params.id, req.user.id, req.sessionId)
+    : await videoService.getRelatedApprovedVideos(req.params.id, req.profile, req.sessionId);
   
   logger.info({ message: 'Video fetched successfully', videoId: req.params.id, requestId: req.id });
   res.status(200).json(ApiResponse.success('Video fetched successfully', { video, related }));
@@ -65,6 +102,10 @@ const getStats = asyncHandler(async (req, res) => {
 module.exports = {
   uploadVideo,
   getVideos,
+  getAdminVideos,
+  getMyVideos,
+  selectVideoForAdReview,
+  setAdvertiserPriorityTier,
   getVideo,
   deleteVideo,
   getStats,

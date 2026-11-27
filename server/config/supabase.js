@@ -4,8 +4,8 @@ const logger = require('../utils/logger');
 
 // Validate Supabase configuration
 function validateSupabaseConfig() {
-  if (!env.supabase.url || !env.supabase.anonKey) {
-    throw new Error('Supabase URL and anon key are required');
+  if (!env.supabase.url || !env.supabase.anonKey || !env.supabase.serviceRoleKey) {
+    throw new Error('Supabase URL, anon key, and service role key are required');
   }
 
   try {
@@ -16,6 +16,9 @@ function validateSupabaseConfig() {
 
   if (env.supabase.anonKey.length < 20) {
     throw new Error('Invalid Supabase anon key format');
+  }
+  if (env.supabase.serviceRoleKey.length < 20) {
+    throw new Error('Invalid Supabase service role key format');
   }
 }
 
@@ -40,10 +43,29 @@ const supabase = createClient(env.supabase.url, env.supabase.anonKey, {
   timeout: 30000, // 30 seconds default timeout
 });
 
+// Used only by the API for database and storage operations after its own
+// authentication middleware has authorized the request. Never expose this key
+// to the client application.
+const adminSupabase = createClient(env.supabase.url, env.supabase.serviceRoleKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
+    detectSessionInUrl: false,
+  },
+  db: { schema: 'public' },
+  global: {
+    headers: {
+      'X-Client-Info': 'streamwise-api',
+      'X-Client-Version': '1.0.0',
+    },
+  },
+  timeout: 30000,
+});
+
 async function connectDatabase() {
   try {
     // Test connection with a simple query
-    const { error } = await supabase
+    const { error } = await adminSupabase
       .from('videos')
       .select('id')
       .limit(1);
@@ -69,7 +91,7 @@ async function connectDatabase() {
 async function healthCheck() {
   try {
     const start = Date.now();
-    const { error } = await supabase
+    const { error } = await adminSupabase
       .from('videos')
       .select('id')
       .limit(1);
@@ -92,6 +114,7 @@ async function healthCheck() {
 
 module.exports = {
   supabase,
+  adminSupabase,
   connectDatabase,
   healthCheck,
 };

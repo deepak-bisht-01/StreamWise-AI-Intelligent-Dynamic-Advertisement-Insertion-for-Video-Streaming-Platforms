@@ -2,6 +2,11 @@ const express = require('express');
 const videoRoutes = require('./videoRoutes');
 const adAnalysisRoutes = require('./adAnalysisRoutes');
 const adAnalysis = require('../services/adAnalysis');
+const authRoutes = require('./authRoutes');
+const profileRoutes = require('./profileRoutes');
+const brandRoutes = require('./brandRoutes');
+const mediaRoutes = require('./mediaRoutes');
+const advertiserRequestRoutes = require('./advertiserRequestRoutes');
 const { healthCheck: dbHealthCheck } = require('../config/supabase');
 const { cloudinary } = require('../config/cloudinary');
 const logger = require('../utils/logger');
@@ -64,6 +69,11 @@ router.get('/health', async (req, res) => {
   });
 });
 
+router.use('/auth', authRoutes);
+router.use('/profile', profileRoutes);
+router.use('/brands', brandRoutes);
+router.use('/advertiser-requests', advertiserRequestRoutes);
+router.use('/media', mediaRoutes);
 router.use('/videos', adAnalysisRoutes(adAnalysis));
 router.use('/videos', videoRoutes);
 router.use('/ai', require('./aiRoutes'));

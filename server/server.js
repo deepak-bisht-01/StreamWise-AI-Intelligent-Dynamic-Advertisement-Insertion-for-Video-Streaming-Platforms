@@ -1,6 +1,7 @@
 const { env, assertEnv } = require('./config/env');
 const { connectDatabase } = require('./config/supabase');
 const adAnalysis = require('./services/adAnalysis');
+const advertiserRequests = require('./services/advertiserRequestService');
 const app = require('./app');
 const logger = require('./utils/logger');
 
@@ -11,6 +12,7 @@ async function start() {
   await connectDatabase();
   // Resume work left pending if the API was stopped during an analysis run.
   await adAnalysis.recoverPending();
+  await advertiserRequests.recoverPending();
 
   const server = app.listen(env.port, () => {
     logger.info({ message: `Lumina API listening on port ${env.port}`, port: env.port, environment: env.nodeEnv });

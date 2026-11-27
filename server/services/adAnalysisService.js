@@ -2,8 +2,8 @@
  * Background billboard / blank-wall analysis.
  *
  *   const adAnalysis = createAdAnalysisService({ supabase });
- *   adAnalysis.enqueue(videoId);      // call right after a video row is inserted
- *   adAnalysis.recoverPending();      // call once when the server starts
+ *   adAnalysis.enqueue(videoId);      // after an admin selects the video
+ *   adAnalysis.recoverPending();      // resume selected videos at server start
  *
  * Flow: download the stored video (Cloudinary URL) -> run Python detector ->
  * save slots in Supabase -> update videos.analysis_status. One video at a time.
@@ -107,9 +107,13 @@ function createAdAnalysisService({ supabase, logger = console }) {
 
   async function analyse(id) {
     const { data: video, error } = await supabase.from('videos')
-      .select('id, video_url, analysis_meta').eq('id', id).single();
+      .select('id, video_url, analysis_meta, ad_review_enabled').eq('id', id).single();
     if (error || !video) {
       logger.error({ message: 'Video for billboard analysis was not found', videoId: id, error: error?.message });
+      return;
+    }
+    if (video.ad_review_enabled !== true) {
+      logger.info({ message: 'Skipping billboard analysis until an admin selects the video', videoId: id });
       return;
     }
 
@@ -152,7 +156,7 @@ function createAdAnalysisService({ supabase, logger = console }) {
       }
       await fs.promises.mkdir(PREVIEW_DIR, { recursive: true });
       await fs.promises.copyFile(sourcePreview, path.join(PREVIEW_DIR, `${id}.mp4`));
-      const previewUrl = `/storage/ai-previews/${id}.mp4`;
+      const previewUrl = `/api/videos/${id}/analysis/preview`;
 
       let adInputReady = false;
       const adInputDir = resolveVideoAssetDir(AD_INPUTS_DIR, id);
@@ -212,13 +216,14 @@ function createAdAnalysisService({ supabase, logger = console }) {
     setImmediate(drain); // never blocks the upload response
   }
 
-  /** Re-queue anything unfinished (new videos, old videos, or a crash mid-run). */
+  /** Resume only admin-selected analyses that were unfinished or interrupted. */
   async function recoverPending() {
     const { data, error } = await supabase.from('videos').select('id')
+      .eq('ad_review_enabled', true)
       .in('analysis_status', ['pending', 'processing']).order('created_at', { ascending: true });
     if (error) {
       logger.error({
-        message: 'Could not resume billboard analyses. Apply the ad analysis migration if it has not been run.',
+        message: 'Could not resume billboard analyses. Apply the ad analysis and creator review migrations if they have not been run.',
         error: error.message,
       });
       return;
@@ -229,14 +234,14 @@ function createAdAnalysisService({ supabase, logger = console }) {
 
   async function getAnalysis(id) {
     const { data: video, error } = await supabase.from('videos')
-      .select('id, analysis_status, analysis_error, analysis_started_at, analysis_completed_at, analysis_meta').eq('id', id).single();
+      .select('id, analysis_status, analysis_error, analysis_started_at, analysis_completed_at, analysis_meta, ad_review_enabled').eq('id', id).single();
     if (error?.code === 'PGRST116' || (!error && !video)) return null;
     if (error) throw new Error(`Could not load billboard analysis. Apply the ad analysis migration: ${error.message}`);
     const { data: slots, error: slotsError } = await supabase.from('ad_slots')
       .select('id, slot_number, rank_order, kind, start_sec, end_sec, duration_sec, x1, y1, x2, y2, frame_width, frame_height, ranking_score, track')
       .eq('video_id', id).order('start_sec', { ascending: true });
     if (slotsError) throw new Error(`Could not load detected billboard slots: ${slotsError.message}`);
-    return { status: video.analysis_status, error: video.analysis_error,
+    return { status: video.analysis_status, adReviewEnabled: video.ad_review_enabled === true, error: video.analysis_error,
       startedAt: video.analysis_started_at, completedAt: video.analysis_completed_at,
       previewUrl: video.analysis_meta?.previewUrl || null,
       adInputReady: video.analysis_meta?.adInputReady === true,
@@ -245,6 +250,8 @@ function createAdAnalysisService({ supabase, logger = console }) {
   }
 
   async function retry(id) {
+    const { data: video, error } = await supabase.from('videos').select('ad_review_enabled').eq('id', id).single();
+    if (error || video?.ad_review_enabled !== true) return false;
     const updated = await setStatus(id, { analysis_status: 'pending', analysis_error: null });
     if (!updated) return false;
     enqueue(id);

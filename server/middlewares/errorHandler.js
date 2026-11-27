@@ -64,6 +64,7 @@ async function errorHandler(err, req, res, next) {
   logger.error({
     message: 'API error occurred',
     error: err.message,
+    details: env.isProduction ? undefined : err.details || undefined,
     statusCode,
     requestId: req.id,
     url: req.url,

@@ -1,5 +1,5 @@
-const { supabase } = require('../config/supabase');
+const { adminSupabase } = require('../config/supabase');
 const logger = require('../utils/logger');
 const { createAdAnalysisService } = require('./adAnalysisService');
 
-module.exports = createAdAnalysisService({ supabase, logger });
+module.exports = createAdAnalysisService({ supabase: adminSupabase, logger });

@@ -74,7 +74,7 @@ begin
 end;
 $$ language plpgsql stable;
 
-grant execute on function public.get_library_stats() to anon, authenticated;
+grant execute on function public.get_library_stats() to service_role;
 
 -- Step 6: Create search function (optional enhancement)
 create or replace function public.search_videos(search_term text)
@@ -90,7 +90,7 @@ begin
 end;
 $$ language plpgsql stable;
 
-grant execute on function public.search_videos(text) to anon, authenticated;
+grant execute on function public.search_videos(text) to service_role;
 
 -- Step 7: Add comments for documentation
 comment on table public.videos is 'Stores video metadata and Cloudinary asset references';

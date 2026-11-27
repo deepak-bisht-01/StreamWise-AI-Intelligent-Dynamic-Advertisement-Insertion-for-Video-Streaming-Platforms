@@ -8,6 +8,7 @@ import Button from './Button.jsx';
 import Input from './Input.jsx';
 import ProgressBar from './ProgressBar.jsx';
 import Textarea from './Textarea.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 const VIDEO_TYPES = ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska'];
 const VIDEO_EXTENSIONS = ['.mp4', '.mov', '.avi', '.mkv'];
@@ -125,6 +126,7 @@ const initialForm = {
 
 export default function UploadForm() {
   const navigate = useNavigate();
+  const { profile } = useAuth();
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [progress, setProgress] = useState(0);
@@ -195,8 +197,8 @@ export default function UploadForm() {
         thumbnail: form.thumbnail,
         onProgress: setProgress,
       });
-      toast.success('Video published to the library');
-      navigate(`/watch/${video.id}`);
+      toast.success('Video submitted. An administrator will review it for ad placement.');
+      navigate(profile?.role === 'admin' ? '/admin' : '/dashboard');
     } catch (error) {
       toast.error(getErrorMessage(error));
       setProgress(0);

@@ -17,6 +17,9 @@ create table public.videos (
   thumbnail_url text not null check (thumbnail_url ~* '^https?://'),
   cloudinary_video_id text not null,
   cloudinary_thumbnail_id text not null,
+  uploaded_by uuid,
+  creator_name text not null default 'Legacy creator',
+  ad_review_enabled boolean not null default false,
   duration double precision not null default 0 check (duration >= 0),
   file_size integer not null default 0 check (file_size >= 0),
   created_at timestamptz not null default now(),
@@ -37,19 +40,10 @@ create index if not exists videos_created_title_idx on public.videos (created_at
 -- Enable Row Level Security
 alter table public.videos enable row level security;
 
--- Create policies for public access (as per current architecture)
--- Note: In production, these should be replaced with authenticated policies
-create policy "Allow public read on videos"
-  on public.videos for select
-  using (true);
-
-create policy "Allow public insert on videos"
-  on public.videos for insert
-  with check (true);
-
-create policy "Allow public delete on videos"
-  on public.videos for delete
-  using (true);
+-- Video rows and source media are accessed only through the authenticated API.
+-- The API uses service_role; do not add anon/authenticated table policies.
+revoke all privileges on public.videos from public, anon, authenticated;
+grant select, insert, update, delete on public.videos to service_role;
 
 -- Create function to automatically update updated_at timestamp
 create or replace function public.update_updated_at_column()
@@ -90,7 +84,7 @@ end;
 $$ language plpgsql stable;
 
 -- Grant execute permission on the function
-grant execute on function public.get_library_stats() to anon, authenticated;
+grant execute on function public.get_library_stats() to service_role;
 
 -- Create function for video search (optional enhancement)
 create or replace function public.search_videos(search_term text)
@@ -107,7 +101,7 @@ end;
 $$ language plpgsql stable;
 
 -- Grant execute permission on search function
-grant execute on function public.search_videos(text) to anon, authenticated;
+grant execute on function public.search_videos(text) to service_role;
 
 -- Create view for video statistics (optional enhancement)
 create or replace view public.video_stats as
@@ -124,7 +118,7 @@ select
 from public.videos;
 
 -- Grant select permission on the view
-grant select on public.video_stats to anon, authenticated;
+grant select on public.video_stats to service_role;
 
 -- Add comments for documentation
 comment on table public.videos is 'Stores video metadata and Cloudinary asset references';

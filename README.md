@@ -56,6 +56,7 @@ PORT=5000
 CLIENT_ORIGIN=http://localhost:5173
 SUPABASE_URL=
 SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
 CLOUDINARY_CLOUD_NAME=
 CLOUDINARY_API_KEY=
 CLOUDINARY_API_SECRET=
@@ -79,7 +80,8 @@ The Vite dev server proxies `/api` to the Express server, so the client can call
 2. Open **Project Settings → API**.
 3. Copy the **Project URL** into `SUPABASE_URL`.
 4. Copy the **anon public** key into `SUPABASE_ANON_KEY`.
-5. Open **SQL Editor** and run:
+5. Copy the **service_role** key into `SUPABASE_SERVICE_ROLE_KEY` for the Express server only. Never put it in `client/.env` or frontend code.
+6. Open **SQL Editor** and run:
 
 ### For New Installations:
 Run the complete schema from `server/database/schema.sql`:
@@ -122,20 +124,11 @@ create index if not exists videos_title_idx on public.videos (title);
 
 alter table public.videos enable row level security;
 
-create policy "Allow public read on videos"
-  on public.videos for select
-  using (true);
-
-create policy "Allow public insert on videos"
-  on public.videos for insert
-  with check (true);
-
-create policy "Allow public delete on videos"
-  on public.videos for delete
-  using (true);
+-- Do not add public/anon policies. Apply viewer_admin_access_migration.sql
+-- so only the authenticated StreamWise API service role can access source rows.
 ```
 
-The API uses the anon key with no authentication, so the policies above allow the Express server to read, insert, and delete rows.
+The video table and source files are not public. The server uses its service role key after checking StreamWise sessions and roles; viewer endpoints return only location-matched, administrator-approved ad renders. Keep the service role key on the server.
 
 ### Enhanced Schema Features:
 - **Data Validation**: CHECK constraints for field lengths and formats
@@ -159,11 +152,42 @@ The API uses the anon key with no authentication, so the policies above allow th
 
 The detector from `server/scripts/Copy_of_Phase3_FIXED_V4.ipynb` is checked in as `server/scripts/ad_slot_detector_v4.py`; the notebook's detector cell and the checked-in script match. `server/scripts/colab_ad_insertion.py` is the command-line bridge used by the API.
 
-After a video upload, the API queues billboard and blank-wall detection in the background. Slot data is stored in Supabase, and the rectangle-marked detection video is saved under `server/storage/ai-previews/` and shown on the watch page. The original upload remains available too. This pipeline identifies placement suggestions; it does not insert an advertisement creative into the video.
+Video uploads from signed-in viewers are normal creator submissions. They are stored with the creator's display name and are not played in the viewer library. An administrator explicitly selects a submission for ad review before billboard detection is queued. Slot data is stored in Supabase, and the rectangle-marked detection video is saved under `server/storage/ai-previews/` and shown on the admin watch page. The original upload remains available only in the admin workflow for review and rendering.
 
 ### One-time database setup
 
 Run `server/database/ad_analysis_migration.sql` in the Supabase SQL Editor after setting up the main video schema. It adds analysis status fields and the `ad_slots` table. The API resumes pending analyses when it starts.
+
+## User Profiles and Regional Ads
+
+Run `server/database/personalized_ads_migration.sql` after the main schema and `ad_analysis_migration.sql`, then run `server/database/manual_auth_migration.sql`, `server/database/location_district_migration.sql`, `server/database/viewer_admin_access_migration.sql`, `server/database/video_creator_review_migration.sql`, and `server/database/advertiser_orders_migration.sql`, followed by `server/database/advertiser_priority_payment_migration.sql`. The manual-auth migration creates StreamWise accounts and sessions. The district migration adds district-level targeting to viewer profiles and campaigns. The viewer/admin migration removes public access to source videos and detector slots; server routes then enforce app roles. The creator review migration adds upload attribution and the admin-controlled ad-review flag. The advertiser orders migration adds advertiser submissions, the INR rate card, payment confirmation, and receipts. The advertiser priority/payment migration adds location rate rules, admin-assigned video tiers, QR payment instructions, and advertiser-submitted payment references. The app does not use Supabase Auth or send confirmation emails; passwords are hashed by the API and sessions can be revoked on sign-out. Email is used as the account name but is not verified by email. Existing Supabase Auth accounts need to create a new StreamWise account; their old profile rows and campaign data remain in the database but are not automatically attached to the new account.
+
+If account creation reports a database migration error, run the **entire** `manual_auth_migration.sql` file in the SQL Editor for the same Supabase project referenced by `SUPABASE_URL` in `server/.env`, then restart the API. You can check the API role's required privileges in the SQL Editor with:
+
+```sql
+select
+  has_table_privilege('service_role', 'public.app_users', 'SELECT') as can_read_users,
+  has_table_privilege('service_role', 'public.app_users', 'INSERT') as can_create_users,
+  has_table_privilege('service_role', 'public.profiles', 'INSERT') as can_create_profiles,
+  has_table_privilege('service_role', 'public.app_sessions', 'INSERT') as can_create_sessions;
+```
+
+Users create an account from **Sign in** in the navigation, then choose **Use GPS** or enter a manual country/state/district on their profile. India state/UT and district options come from the Local Government Directory and fall back to manual entry if the location service is unavailable. GPS coordinates are only saved after they press **Save profile**. For GPS-radius campaigns, enter the campaign center coordinates and radius in kilometres; state, district, and city can be used for exact regional targeting.
+
+Advertisers open **Advertise with us** to submit a logo, campaign location/radius, contact details, and one or more ad-ready video links. Admins assign Standard, Featured, or Premium value tiers to videos, configure location-specific INR rates and a payment QR image, then issue a revised quote. Advertisers can submit a payment reference from the quote page; admins verify it and confirm payment before rendering. That action issues a printable receipt and queues `server/scripts/ad_inserter.py` to render the logo into the highest-ranked detected billboard slot for every selected video. Each rendered video remains pending until an admin approves it in the video review page; only approved versions are shown to viewers.
+
+The first brand administrator must be assigned manually in the Supabase SQL Editor after creating a StreamWise account:
+
+```sql
+update public.profiles p
+set role = 'admin'
+from public.app_users u
+where p.id = u.id and lower(u.email) = lower('admin@example.com');
+```
+
+Administrators use `/admin` for the video review queue and `/brands` for reusable regional campaign inventory. A campaign stores the brand creative and its country/state/district targeting. On an analyzed video's admin view, choose **Brand inventory** as the creative source to place that saved campaign into a detected slot; its creative and saved location are reused automatically. Upload a one-off creative when it should only be used for that video. India state/UT and district lists are provided by the Government of India's Local Government Directory. Preview the rendered video and press **Approve for viewers** only after review. Approval and location targeting are stored with the video analysis result.
+
+Viewers use `/dashboard`. The API returns only videos that have an approved ad version matching their saved location, and streams that ad video after checking the viewer's session and location. Raw source URLs and detector previews are available only to administrators. If there is no approved version for the viewer's region, the video is omitted; the raw upload is never used as a fallback.
 
 ### Python setup
 

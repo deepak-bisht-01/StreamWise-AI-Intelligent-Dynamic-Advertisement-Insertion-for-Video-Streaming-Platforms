@@ -10,7 +10,7 @@ export default function Upload() {
             Upload Your Video
           </h1>
           <p className="mt-4 max-w-2xl mx-auto text-lg text-slate-600">
-            Upload your video to StreamWise AI. The system will automatically analyze the content, detect advertisement spaces, replace them with intelligent advertisements, and prepare the processed video for streaming.
+            Share a normal video with the library. An administrator will review submissions and decide whether to add location-specific ads before viewers can watch them.
           </p>
         </div>
         <div className="card-shadow-elevated rounded-2xl border border-slate-100 bg-white p-8 sm:p-10 animate-scale-in">

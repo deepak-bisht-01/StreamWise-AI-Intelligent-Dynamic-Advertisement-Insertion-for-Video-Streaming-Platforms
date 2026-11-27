@@ -29,7 +29,7 @@ export default function VideoCard({ video }) {
         <h3 className="line-clamp-2 text-base font-semibold text-slate-900 group-hover:text-emerald-500 transition-colors duration-200">
           {video.title}
         </h3>
-        <p className="text-xs text-slate-500 font-medium">StreamWise AI</p>
+        <p className="text-xs text-slate-400 font-medium">By {video.creatorName || 'StreamWise creator'}</p>
         <div className="flex flex-wrap gap-3 text-xs text-slate-500">
           <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-slate-50">
             <HiOutlineCalendarDays className="h-3.5 w-3.5" />

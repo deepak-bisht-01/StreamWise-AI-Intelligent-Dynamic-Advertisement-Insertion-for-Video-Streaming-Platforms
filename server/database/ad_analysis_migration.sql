@@ -8,8 +8,8 @@ alter table public.videos
   add column if not exists analysis_completed_at timestamptz,
   add column if not exists analysis_meta jsonb;
 
--- Existing rows get 'pending' from the default, so the server's startup sweep
--- will analyse every video that was uploaded before this feature existed.
+-- Existing rows get 'pending' from the default. After the creator review
+-- migration, startup resumes only analyses that an administrator selected.
 
 alter table public.videos drop constraint if exists videos_analysis_status_check;
 alter table public.videos add constraint videos_analysis_status_check
@@ -38,13 +38,14 @@ create index if not exists ad_slots_video_idx on public.ad_slots (video_id, star
 
 alter table public.ad_slots enable row level security;
 
--- The API uses the anon key (no auth), same approach as the videos table.
+-- The authenticated API accesses rows with service_role. Keep RLS enabled and
+-- do not create policies for anon/authenticated clients.
+drop policy if exists "Allow public read on videos" on public.videos;
+drop policy if exists "Allow public insert on videos" on public.videos;
 drop policy if exists "Allow public update on videos" on public.videos;
-create policy "Allow public update on videos" on public.videos for update using (true) with check (true);
-
+drop policy if exists "Allow public delete on videos" on public.videos;
 drop policy if exists "Allow public read on ad_slots" on public.ad_slots;
-create policy "Allow public read on ad_slots" on public.ad_slots for select using (true);
 drop policy if exists "Allow public insert on ad_slots" on public.ad_slots;
-create policy "Allow public insert on ad_slots" on public.ad_slots for insert with check (true);
 drop policy if exists "Allow public delete on ad_slots" on public.ad_slots;
-create policy "Allow public delete on ad_slots" on public.ad_slots for delete using (true);
+revoke all privileges on public.videos, public.ad_slots from public, anon, authenticated;
+grant select, insert, update, delete on public.videos, public.ad_slots to service_role;

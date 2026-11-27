@@ -9,6 +9,7 @@ import ErrorState from '../components/ErrorState.jsx';
 import VideoCard from '../components/VideoCard.jsx';
 import { WatchPageSkeleton } from '../components/Skeleton.jsx';
 import AdAnalysisPanel from '../components/AdAnalysisPanel.jsx';
+import { useAuth } from '../contexts/AuthContext.jsx';
 
 export default function Watch() {
   const { id } = useParams();
@@ -19,6 +20,8 @@ export default function Watch() {
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState('');
+  const { profile } = useAuth();
+  const isAdmin = profile?.role === 'admin';
 
   async function loadVideo() {
     setIsLoading(true);
@@ -56,6 +59,8 @@ export default function Watch() {
     }
   }
 
+  const playbackUrl = video?.videoUrl;
+
   if (isLoading) {
     return <WatchPageSkeleton />;
   }
@@ -83,23 +88,24 @@ export default function Watch() {
         <div className="grid gap-8 lg:grid-cols-[1.7fr_0.8fr]">
           <section className="animate-fade-in">
             <div className="card-shadow-elevated overflow-hidden rounded-2xl bg-slate-950">
-              <video
+              {playbackUrl ? <video
                 ref={videoElement}
-                key={video.videoUrl}
+                key={playbackUrl}
                 className="aspect-video w-full bg-black"
-                src={video.videoUrl}
+                src={playbackUrl}
                 poster={video.thumbnailUrl}
                 controls
                 preload="metadata"
               >
                 Your browser does not support the HTML5 video player.
-              </video>
+              </video> : <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-white/70">Approved ad version is unavailable.</div>}
             </div>
+            {!isAdmin && video.approvedAd && <p className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">This is an administrator-approved ad video for {[video.approvedAd.city, video.approvedAd.district, video.approvedAd.state, video.approvedAd.country].filter(Boolean).join(', ')}.</p>}
 
             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div className="flex-1">
                 <h1 className="text-2xl font-bold text-slate-900 sm:text-3xl">{video.title}</h1>
-                <p className="mt-2 text-sm text-slate-600 font-medium">StreamWise AI</p>
+                <p className="mt-2 text-sm text-slate-400 font-medium">Uploaded by {video.creatorName || 'StreamWise creator'}</p>
                 <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
                   <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-slate-100">
                     <HiOutlineCalendarDays className="h-4 w-4" />
@@ -115,10 +121,9 @@ export default function Watch() {
                   </span>
                 </div>
               </div>
-              <Button variant="danger" onClick={handleDelete} disabled={isDeleting} size="lg">
-                <HiOutlineTrash className="h-4 w-4" />
-                {isDeleting ? 'Deleting...' : 'Delete'}
-              </Button>
+              {isAdmin && <Button variant="danger" onClick={handleDelete} disabled={isDeleting} size="lg">
+                <HiOutlineTrash className="h-4 w-4" />{isDeleting ? 'Deleting...' : 'Delete source video'}
+              </Button>}
             </div>
 
             <div className="card-shadow mt-6 rounded-2xl border border-slate-100 bg-white p-6">
@@ -126,7 +131,7 @@ export default function Watch() {
               <p className="whitespace-pre-wrap text-base leading-relaxed text-slate-600">{video.description}</p>
             </div>
 
-            <div className="mt-6">
+            {isAdmin && <div className="mt-6">
               <AdAnalysisPanel
                 videoId={id}
                 onSeek={(seconds) => {
@@ -135,7 +140,7 @@ export default function Watch() {
                   videoElement.current.play().catch(() => {});
                 }}
               />
-            </div>
+            </div>}
           </section>
 
           <aside className="animate-slide-in">

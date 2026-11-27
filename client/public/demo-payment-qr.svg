@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="360" viewBox="0 0 320 360" role="img" aria-labelledby="title description">
+  <title id="title">Demo payment QR placeholder</title>
+  <desc id="description">A non-scannable demonstration placeholder. Configure a real payment QR in the admin advertiser settings.</desc>
+  <rect width="320" height="360" rx="24" fill="#fff"/>
+  <rect x="34" y="24" width="252" height="252" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="2"/>
+  <g fill="#0f172a">
+    <path d="M50 40h66v66H50zm12 12v42h42V52zm8 8h26v26H70zM204 40h66v66h-66zm12 12v42h42V52zm8 8h26v26h-26zM50 188h66v66H50zm12 12v42h42v-42zm8 8h26v26H70z"/>
+    <path d="M130 42h14v14h-14zm28 0h14v28h-14zm-28 28h14v14h-14zm14 14h28v14h-28zm42 0h14v14h-14zm-56 28h14v14h-14zm28 0h14v28h-14zm28 14h28v14h-28zm42-14h14v28h-14zm-98 28h28v14h-28zm42 0h14v14h-14zm28 0h14v28h-14zm42 14h14v14h-14zm-112 14h14v14h-14zm28 0h28v14h-28zm42 0h14v28h-14zm28 14h14v14h-14zm-56 14h14v14h-14zm28 14h28v14h-28zm56-14h14v14h-14zm-98 28h14v14h-14zm28 0h14v14h-14zm42 0h14v14h-14zm28 14h14v14h-14z"/>
+  </g>
+  <rect x="92" y="128" width="136" height="48" rx="12" fill="#10b981" stroke="#fff" stroke-width="8"/>
+  <text x="160" y="158" text-anchor="middle" fill="#052e2b" font-family="Arial,sans-serif" font-size="18" font-weight="800">DEMO ONLY</text>
+  <text x="160" y="312" text-anchor="middle" fill="#0f172a" font-family="Arial,sans-serif" font-size="16" font-weight="700">Configure a real QR to accept payment</text>
+  <text x="160" y="336" text-anchor="middle" fill="#64748b" font-family="Arial,sans-serif" font-size="12">This placeholder cannot be scanned</text>
+</svg>

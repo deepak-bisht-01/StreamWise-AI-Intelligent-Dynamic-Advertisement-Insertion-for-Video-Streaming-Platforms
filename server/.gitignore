@@ -7,6 +7,7 @@ server/generated/
 storage/ai-previews/
 storage/ad-results/
 storage/ad-inputs/
+storage/personalized-ads/
 .venv/
 __pycache__/
 *.pyc

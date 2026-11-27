@@ -7,6 +7,7 @@ dotenv.config({ path: path.join(__dirname, '../.env') });
 const required = [
   'SUPABASE_URL',
   'SUPABASE_ANON_KEY',
+  'SUPABASE_SERVICE_ROLE_KEY',
   'CLOUDINARY_CLOUD_NAME',
   'CLOUDINARY_API_KEY',
   'CLOUDINARY_API_SECRET',
@@ -78,6 +79,7 @@ const env = {
   supabase: {
     url: getEnv('SUPABASE_URL'),
     anonKey: getEnv('SUPABASE_ANON_KEY'),
+    serviceRoleKey: getEnv('SUPABASE_SERVICE_ROLE_KEY'),
   },
   cloudinary: {
     cloudName: getEnv('CLOUDINARY_CLOUD_NAME'),
