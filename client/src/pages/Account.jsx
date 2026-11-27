@@ -163,7 +163,7 @@ export default function Account() {
 
   return (
     <div className="hero-glow min-h-screen px-4 py-12">
-      <section className="card-shadow-elevated mx-auto max-w-3xl rounded-3xl border border-slate-100 bg-white p-6 sm:p-9">
+        <section className="card-shadow-elevated mx-auto max-w-4xl rounded-3xl border border-slate-700 bg-slate-900 p-6 sm:p-9">
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-emerald-600">Personal profile</p>
@@ -181,27 +181,29 @@ export default function Account() {
         <form className="mt-8 space-y-5" onSubmit={saveProfile}>
           <label className="block text-sm font-semibold text-slate-700">
             Display name
-            <input required maxLength={100} value={form.display_name} onChange={(event) => setForm({ ...form, display_name: event.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-300 px-4 py-3 font-normal outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" />
+            <input required maxLength={100} value={form.display_name} onChange={(event) => setForm({ ...form, display_name: event.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-950 px-4 py-3 font-normal text-slate-100 outline-none transition placeholder:text-slate-500 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/15" />
           </label>
 
-          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/60 p-4 sm:p-5">
+          <div className="relative overflow-hidden rounded-2xl border border-emerald-400/25 bg-slate-950/80 p-4 shadow-lg shadow-black/20 sm:p-6">
+            <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-300/70 to-transparent" />
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
-                <h2 className="font-bold text-slate-900">Ad location</h2>
-                <p className="mt-1 max-w-xl text-sm leading-6 text-slate-600">Your location is used to match active campaigns for your region.</p>
+                <p className="text-[11px] font-extrabold uppercase tracking-[0.18em] text-emerald-300">Campaign targeting</p>
+                <h2 className="mt-1 text-lg font-extrabold text-white">Ad location</h2>
+                <p className="mt-1 max-w-xl text-sm leading-6 text-slate-300">Choose where you watch from to match approved campaigns in your area.</p>
               </div>
-              <button type="button" onClick={useGps} className="rounded-xl bg-white px-4 py-2.5 text-sm font-bold text-emerald-700 shadow-sm ring-1 ring-emerald-200 hover:bg-emerald-50">Use GPS</button>
+              <button type="button" onClick={useGps} className="rounded-xl border border-emerald-300/50 bg-emerald-300 px-4 py-2.5 text-sm font-extrabold text-slate-950 shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-200 focus:outline-none focus:ring-4 focus:ring-emerald-300/25">Detect my location</button>
             </div>
 
-            <div className="mt-4 flex gap-2">
-              <button type="button" onClick={() => setForm({ ...form, location_mode: 'manual', latitude: '', longitude: '' })} className={`rounded-lg px-3 py-2 text-sm font-semibold ${form.location_mode === 'manual' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'}`}>Manual location</button>
-              <button type="button" onClick={useGps} className={`rounded-lg px-3 py-2 text-sm font-semibold ${form.location_mode === 'gps' ? 'bg-slate-900 text-white' : 'bg-white text-slate-600 ring-1 ring-slate-200'}`}>GPS coordinates</button>
+            <div className="mt-5 inline-flex rounded-xl border border-slate-700 bg-slate-900 p-1" role="group" aria-label="Location selection mode">
+              <button type="button" aria-pressed={form.location_mode !== 'gps'} onClick={() => setForm({ ...form, location_mode: 'manual', latitude: '', longitude: '' })} className={`rounded-lg px-4 py-2.5 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-emerald-300/50 ${form.location_mode !== 'gps' ? 'bg-emerald-300 text-slate-950 shadow' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}>Manual location</button>
+              <button type="button" aria-pressed={form.location_mode === 'gps'} onClick={useGps} className={`rounded-lg px-4 py-2.5 text-sm font-bold transition focus:outline-none focus:ring-2 focus:ring-emerald-300/50 ${form.location_mode === 'gps' ? 'bg-emerald-300 text-slate-950 shadow' : 'text-slate-300 hover:bg-slate-800 hover:text-white'}`}>GPS mode</button>
             </div>
 
             <div className="mt-4 grid gap-4 sm:grid-cols-3">
-              <label className="text-sm font-semibold text-slate-700 sm:col-span-1">
+              <label className="text-sm font-bold text-slate-200 sm:col-span-1">
                 Country
-                <input required maxLength={100} value={form.country} onChange={(event) => setForm({ ...form, country: event.target.value, state: '', district: '', city: '' })} className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" />
+                <input required maxLength={100} value={form.country} onChange={(event) => setForm({ ...form, country: event.target.value, state: '', district: '', city: '' })} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 font-normal text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/15" />
               </label>
               <IndiaLocationFields
                 country={form.country}
@@ -209,20 +211,20 @@ export default function Account() {
                 district={form.district}
                 onChange={(location) => setForm({ ...form, ...location })}
               />
-              <label className="text-sm font-semibold text-slate-700">
+              <label className="text-sm font-bold text-slate-200">
                 City / locality (optional)
-                <input maxLength={100} value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 font-normal outline-none focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100" />
+                <input maxLength={100} value={form.city} onChange={(event) => setForm({ ...form, city: event.target.value })} className="mt-1.5 w-full rounded-xl border border-slate-700 bg-slate-900 px-3 py-2.5 font-normal text-slate-100 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-400/15" />
               </label>
             </div>
             {form.location_mode === 'gps' && form.latitude !== '' && (
-              <p className="mt-3 text-xs font-medium text-emerald-800">GPS coordinates: {form.latitude}, {form.longitude}</p>
+              <p className="mt-3 rounded-lg border border-emerald-400/20 bg-emerald-400/10 px-3 py-2 text-sm font-semibold text-emerald-200">GPS coordinates: {form.latitude}, {form.longitude}</p>
             )}
-            <p className="mt-3 text-xs leading-5 text-slate-500">GPS access requires your browser permission. Coordinates are saved only after you press Save profile.</p>
+            <p className="mt-4 border-t border-slate-800 pt-3 text-xs leading-5 text-slate-400">GPS requires browser permission. Your coordinates are saved only when you press <strong className="text-slate-200">Save profile</strong>.</p>
           </div>
 
           {error && <p role="alert" className="rounded-xl border border-rose-200 bg-rose-50 p-3 text-sm text-rose-700">{error}</p>}
           {message && <p role="status" className="rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-700">{message}</p>}
-          <button disabled={isSaving} className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-6 py-3 font-bold text-white shadow-lg shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 disabled:cursor-wait disabled:opacity-60">
+          <button disabled={isSaving} className="rounded-xl border border-emerald-300/40 bg-emerald-400 px-7 py-3.5 font-extrabold text-slate-950 shadow-lg shadow-emerald-950/30 transition hover:bg-emerald-300 focus:outline-none focus:ring-4 focus:ring-emerald-300/25 disabled:cursor-wait disabled:opacity-60">
             {isSaving ? 'Saving profile...' : 'Save profile'}
           </button>
         </form>
