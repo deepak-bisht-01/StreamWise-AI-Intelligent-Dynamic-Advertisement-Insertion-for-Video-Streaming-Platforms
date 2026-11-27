@@ -70,13 +70,19 @@ async function deleteVideoAssets(videoPublicId, thumbnailPublicId) {
 
 async function uploadRenderedAd(filePath, videoId, adId) {
   try {
-    const result = await cloudinary.uploader.upload_large(filePath, {
-      resource_type: 'video',
-      folder: `streamwise/ad-results/${videoId}`,
-      public_id: adId,
-      overwrite: true,
-      invalidate: true,
-      chunk_size: 6_000_000,
+    // This project uses Cloudinary's v2 adapter: upload_large(path, options, callback).
+    const result = await new Promise((resolve, reject) => {
+      cloudinary.uploader.upload_large(filePath, {
+        resource_type: 'video',
+        folder: `streamwise/ad-results/${videoId}`,
+        public_id: adId,
+        overwrite: true,
+        invalidate: true,
+        chunk_size: 6_000_000,
+      }, (error, response) => {
+        if (error) reject(error);
+        else resolve(response);
+      });
     });
     if (!result?.public_id || !result?.secure_url) throw new Error('Cloudinary did not return the rendered video URL');
     return { publicId: result.public_id, secureUrl: result.secure_url, bytes: toNumber(result.bytes) };
