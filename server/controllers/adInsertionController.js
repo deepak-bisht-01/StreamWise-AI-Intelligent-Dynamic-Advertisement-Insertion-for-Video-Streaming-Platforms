@@ -1,13 +1,11 @@
-const fs = require('fs');
-const path = require('path');
 const { asyncHandler } = require('../utils/asyncHandler');
 const { ApiResponse } = require('../utils/ApiResponse');
 const { ApiError } = require('../utils/ApiError');
 const { insertAd, deleteAdResult, setAdApproval } = require('../services/adInsertionService');
 const { adminSupabase } = require('../config/supabase');
 const videoService = require('../services/videoService');
+const { getSharedAdUrl, streamSharedAd } = require('../services/renderedAdDeliveryService');
 
-const AD_RESULTS_DIR = path.resolve(__dirname, '..', 'storage', 'ad-results');
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const addAd = asyncHandler(async (req, res) => {
@@ -49,10 +47,9 @@ const streamAdResult = asyncHandler(async (req, res) => {
   if (req.profile?.role !== 'admin' && !videoService.isApprovedAdForLocation(ad, req.profile)) {
     throw new ApiError(404, 'No approved ad video is available for your location');
   }
-  const resultRoot = path.resolve(AD_RESULTS_DIR, videoId);
-  const filePath = path.resolve(resultRoot, `${adId}.mp4`);
-  if (!filePath.startsWith(`${resultRoot}${path.sep}`) || !fs.existsSync(filePath)) throw new ApiError(404, 'Rendered ad video file not found');
-  res.type('video/mp4').sendFile(filePath);
+  const sharedUrl = await getSharedAdUrl(videoId, adId, ad);
+  res.set('Cache-Control', 'private, no-store');
+  await streamSharedAd(req, res, sharedUrl);
 });
 
 const removeAd = asyncHandler(async (req, res) => {

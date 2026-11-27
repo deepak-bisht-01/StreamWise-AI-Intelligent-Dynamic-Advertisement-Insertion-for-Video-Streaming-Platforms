@@ -19,6 +19,7 @@ export default function Watch() {
   const [related, setRelated] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [playbackError, setPlaybackError] = useState('');
   const [error, setError] = useState('');
   const { profile } = useAuth();
   const isAdmin = profile?.role === 'admin';
@@ -26,6 +27,7 @@ export default function Watch() {
   async function loadVideo() {
     setIsLoading(true);
     setError('');
+    setPlaybackError('');
     try {
       const data = await fetchVideo(id);
       setVideo(data.video);
@@ -96,10 +98,13 @@ export default function Watch() {
                 poster={video.thumbnailUrl}
                 controls
                 preload="metadata"
+                onError={() => setPlaybackError('StreamWise could not load this approved video. Check your connection and retry. If it keeps failing, ask an admin to republish the ad video from the review page.')}
+                onCanPlay={() => setPlaybackError('')}
               >
                 Your browser does not support the HTML5 video player.
               </video> : <div className="flex aspect-video items-center justify-center px-6 text-center text-sm text-white/70">Approved ad version is unavailable.</div>}
             </div>
+            {playbackError && <div role="alert" className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-rose-400/30 bg-rose-400/10 px-4 py-3 text-sm text-rose-200"><span>{playbackError}</span><button type="button" onClick={() => { setPlaybackError(''); videoElement.current?.load(); }} className="rounded-lg border border-rose-300/30 px-3 py-1.5 font-bold text-rose-100 hover:bg-rose-300/10">Retry</button></div>}
             {!isAdmin && video.approvedAd && <p className="mt-3 rounded-xl border border-emerald-100 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">This is an administrator-approved ad video for {[video.approvedAd.city, video.approvedAd.district, video.approvedAd.state, video.approvedAd.country].filter(Boolean).join(', ')}.</p>}
 
             <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">

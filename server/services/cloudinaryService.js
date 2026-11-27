@@ -68,6 +68,36 @@ async function deleteVideoAssets(videoPublicId, thumbnailPublicId) {
   }
 }
 
+async function uploadRenderedAd(filePath, videoId, adId) {
+  try {
+    const result = await cloudinary.uploader.upload_large(filePath, {
+      resource_type: 'video',
+      folder: `streamwise/ad-results/${videoId}`,
+      public_id: adId,
+      overwrite: true,
+      invalidate: true,
+      chunk_size: 6_000_000,
+    });
+    if (!result?.public_id || !result?.secure_url) throw new Error('Cloudinary did not return the rendered video URL');
+    return { publicId: result.public_id, secureUrl: result.secure_url, bytes: toNumber(result.bytes) };
+  } catch (error) {
+    logger.error({ message: 'Failed to publish rendered ad video to Cloudinary', error: error.message, videoId, adId });
+    throw new ApiError(502, 'Could not publish the rendered video to shared storage', error.message);
+  }
+}
+
+async function deleteRenderedAdAsset(publicId) {
+  if (!publicId) return;
+  await deleteAsset(publicId, 'video');
+}
+
+async function deleteRenderedAdAssets(adResults = []) {
+  const assets = (Array.isArray(adResults) ? adResults : []).map((ad) => ad.cloudinaryPublicId).filter(Boolean);
+  const results = await Promise.allSettled(assets.map(deleteRenderedAdAsset));
+  const failed = results.filter((result) => result.status === 'rejected');
+  if (failed.length) logger.warn({ message: 'Some rendered Cloudinary ad assets could not be deleted', failed: failed.length, total: assets.length });
+}
+
 function extractUploadInfo(file, fallbackFolder) {
   const publicId = file.public_id || file.filename;
   const url = file.secure_url || file.path;
@@ -87,6 +117,9 @@ function extractUploadInfo(file, fallbackFolder) {
 module.exports = {
   getVideoMetadata,
   deleteVideoAssets,
+  uploadRenderedAd,
+  deleteRenderedAdAsset,
+  deleteRenderedAdAssets,
   extractUploadInfo,
   VIDEO_FOLDER,
   THUMBNAIL_FOLDER,

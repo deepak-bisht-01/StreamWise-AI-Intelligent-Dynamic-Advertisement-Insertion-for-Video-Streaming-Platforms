@@ -8,6 +8,7 @@ const { getPythonRuntime } = require('../utils/pythonRuntime');
 const { ApiError } = require('../utils/ApiError');
 const { env } = require('../config/env');
 const logger = require('../utils/logger');
+const { uploadRenderedAd, deleteRenderedAdAsset } = require('./cloudinaryService');
 
 const PROJECT_ROOT = path.resolve(__dirname, '..', '..');
 const STORAGE_DIR = path.join(__dirname, '..', 'storage');
@@ -198,6 +199,7 @@ async function insertAd({ videoId, slotId, creative, campaignId, targeting, crea
   const outputUrl = `/api/videos/${videoId}/ads/${runId}/file`;
   const temporaryDir = await fs.promises.mkdtemp(path.join(os.tmpdir(), 'streamwise-ad-'));
   const imagePath = path.join(temporaryDir, `creative${extension}`);
+  let cloudinaryAsset = null;
 
   try {
     await fs.promises.writeFile(imagePath, creative.buffer);
@@ -210,6 +212,7 @@ async function insertAd({ videoId, slotId, creative, campaignId, targeting, crea
       '--output', outputPath,
       '--slot-ids', String(slot.slot_number),
     ]);
+    cloudinaryAsset = await uploadRenderedAd(outputPath, videoId, runId);
 
     const record = {
       id: runId,
@@ -221,6 +224,8 @@ async function insertAd({ videoId, slotId, creative, campaignId, targeting, crea
       brandName: selectedCampaign?.brands?.name || brandNameOverride || null,
       advertiserRequestId,
       outputUrl,
+      cloudinaryPublicId: cloudinaryAsset.publicId,
+      cloudinaryUrl: cloudinaryAsset.secureUrl,
       createdAt: new Date().toISOString(),
       ...location,
       createdBy,
@@ -240,6 +245,11 @@ async function insertAd({ videoId, slotId, creative, campaignId, targeting, crea
 
     return record;
   } catch (error) {
+    if (cloudinaryAsset?.publicId) {
+      await deleteRenderedAdAsset(cloudinaryAsset.publicId).catch((cleanupError) => {
+        logger.warn({ message: 'Could not remove incomplete rendered video from Cloudinary', publicId: cloudinaryAsset.publicId, error: cleanupError.message });
+      });
+    }
     await fs.promises.rm(outputPath, { force: true }).catch(() => {});
     throw error;
   } finally {
@@ -276,6 +286,8 @@ async function deleteAdResult({ videoId, adId }) {
   const adResults = Array.isArray(metadata.adResults) ? metadata.adResults : [];
   const result = adResults.find((ad) => ad.id === adId);
   if (!result) throw new ApiError(404, 'Ad result not found');
+
+  if (result.cloudinaryPublicId) await deleteRenderedAdAsset(result.cloudinaryPublicId);
 
   const { error: updateError } = await adminSupabase.from('videos').update({
     analysis_meta: { ...metadata, adResults: adResults.filter((ad) => ad.id !== adId) },

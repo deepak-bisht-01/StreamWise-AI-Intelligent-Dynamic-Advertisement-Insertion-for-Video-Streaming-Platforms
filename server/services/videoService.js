@@ -5,6 +5,7 @@ const {
   extractUploadInfo,
   getVideoMetadata,
   deleteVideoAssets,
+  deleteRenderedAdAssets,
 } = require('./cloudinaryService');
 const logger = require('../utils/logger');
 
@@ -429,6 +430,7 @@ async function deleteVideo(id) {
   
   try {
     await deleteVideoAssets(video.cloudinaryVideoId, video.cloudinaryThumbnailId);
+    await deleteRenderedAdAssets(video.adResults);
   } catch (cloudinaryError) {
     logger.error({ message: 'Failed to delete Cloudinary assets', error: cloudinaryError.message });
     throw new ApiError(502, 'Failed to delete video assets from Cloudinary');

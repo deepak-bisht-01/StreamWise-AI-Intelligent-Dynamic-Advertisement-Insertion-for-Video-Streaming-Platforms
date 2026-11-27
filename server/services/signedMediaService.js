@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 const { env } = require('../config/env');
 
-const MEDIA_LINK_LIFETIME_SECONDS = 15 * 60;
+// Video players issue additional byte-range requests during long playback.
+const MEDIA_LINK_LIFETIME_SECONDS = 6 * 60 * 60;
 
 function signatureFor(kind, videoId, assetId, userId, sessionId, expiresAt) {
   const payload = [kind, videoId, assetId || '', userId, sessionId, expiresAt].join(':');

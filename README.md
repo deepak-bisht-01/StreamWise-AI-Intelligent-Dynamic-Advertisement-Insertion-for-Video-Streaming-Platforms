@@ -211,7 +211,7 @@ POST /api/videos/:id/analyze
 
 The first endpoint returns the current status and detected slots. The second queues a retry after a failed analysis. Uploading a video starts analysis automatically.
 
-When analysis is complete, the watch page lets you choose a detected slot and upload an image or video creative (JPG, PNG, MP4, MOV, WebM, MKV, or AVI; up to 100 MB). The API runs `server/scripts/ad_inserter.py` with the detector's normalized video, `slots.json`, and `coordinates.csv`. It perspective-warps the creative into the tracked billboard and saves a new playable video with the source audio under `server/storage/ad-results/`. The detector inputs needed for insertion are kept under `server/storage/ad-inputs/`.
+When analysis is complete, the watch page lets you choose a detected slot and upload an image or video creative (JPG, PNG, MP4, MOV, WebM, MKV, or AVI; up to 100 MB). The API runs `server/scripts/ad_inserter.py` with the detector's normalized video, `slots.json`, and `coordinates.csv`. It perspective-warps the creative into the tracked billboard, writes a local working copy under `server/storage/ad-results/`, and uploads the playable render to Cloudinary so viewers on other devices and API instances can access it. The detector inputs needed for insertion stay under `server/storage/ad-inputs/` on the API machine.
 
 The lower-level processor endpoint is also available for local input paths:
 
